@@ -86,20 +86,21 @@ docker compose up --detach
 
 ## Demo Video
 
-[▶️ Watch the Demo on YouTube](YOUR_YOUTUBE_LINK_HERE)
+[▶️ Watch the Demo on YouTube](https://www.youtube.com/watch?v=HXMeiJy8uTw)
 
 ---
 
 ## Screenshots
 
 ### Overview Dashboard
-![Overview Dashboard](screenshots/overview.png)
+![Overview Dashboard](https://drive.google.com/drive/u/0/folders/1xr-Nz5MmZ7RIhRqy_dtxCNB028zWvD-E)
+![Overview Dashboard](https://drive.google.com/drive/u/0/folders/1xr-Nz5MmZ7RIhRqy_dtxCNB028zWvD-E)
 
 ### Table Health Page
-![Table Health](screenshots/tables.png)
+![Table Health](https://drive.google.com/drive/u/0/folders/1xr-Nz5MmZ7RIhRqy_dtxCNB028zWvD-E)
 
 ### Test Results Page
-![Test Results](screenshots/tests.png)
+![Test Results](https://drive.google.com/drive/u/0/folders/1xr-Nz5MmZ7RIhRqy_dtxCNB028zWvD-E)
 
 ---
 
