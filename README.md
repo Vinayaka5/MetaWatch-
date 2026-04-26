@@ -91,17 +91,10 @@ docker compose up --detach
 ---
 
 ## Screenshots
-
-### Overview Dashboard
-![Overview Dashboard](https://drive.google.com/file/d/1BmJ0j9z4FI6DybKgl8aBWRDw82IolcS4/view?usp=drive_link)
-![Overview Dashboard](https://drive.google.com/file/d/1lV4TRgYfHMJVGd29ogeLSSAIdwMlqmqT/view?usp=sharing)
-
-### Table Health Page
-![Table Health](https://drive.google.com/file/d/1HY2N9RqUGjG25ZADND28FtEa5w9gGUwj/view?usp=sharing)
-
-### Test Results Page
-![Test Results](https://drive.google.com/file/d/1LNTkou2yYhdTxsqczoYb47yeKrHAlOA1/view?usp=sharing)
-
+are in the directory with name as 
+1) dashboard, dashboard down
+2) table health
+3) test results
 ---
 
 ## Project Structure
