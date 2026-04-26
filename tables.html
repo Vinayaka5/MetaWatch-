@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Table Health Status</h1>
+    <p class="page-sub">Monitoring {{ tables | length }} tables across all databases</p>
+  </div>
+
+  <!-- Filter Buttons -->
+  <div class="filter-group" id="filterGroup">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="Healthy">
+      <span class="dot-healthy"></span> Healthy
+    </button>
+    <button class="filter-btn" data-filter="Warning">
+      <span class="dot-warning"></span> Warning
+    </button>
+    <button class="filter-btn" data-filter="Critical">
+      <span class="dot-critical"></span> Critical
+    </button>
+    <button class="filter-btn" data-filter="No Tests">
+      <span class="dot-none"></span> No Tests
+    </button>
+  </div>
+</div>
+
+<div class="dash-card mt-2">
+  <div class="dash-card-body p-0">
+    <table class="health-table" id="tableHealth">
+      <thead>
+        <tr>
+          <th>Table</th>
+          <th>Database</th>
+          <th>Owner</th>
+          <th>Score</th>
+          <th>Status</th>
+          <th>Tests</th>
+          <th>Passed</th>
+          <th>Failed</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in tables %}
+        <tr class="table-row" data-health="{{ t.health }}">
+          <td>
+            <div class="table-name-cell">
+              <i class="bi bi-table me-2 text-muted"></i>
+              <span class="fw-600">{{ t.name }}</span>
+            </div>
+          </td>
+          <td><span class="db-chip">{{ t.database }}</span></td>
+          <td class="text-muted">{{ t.owner }}</td>
+          <td>
+            <div class="score-bar-wrap">
+              <div class="score-bar-track">
+                <div class="score-bar-fill
+                  {% if t.score >= 80 %}fill-green
+                  {% elif t.score >= 50 %}fill-yellow
+                  {% elif t.score > 0 %}fill-red
+                  {% else %}fill-gray
+                  {% endif %}"
+                  style="width: {{ t.score }}%">
+                </div>
+              </div>
+              <span class="score-label">{{ t.score }}%</span>
+            </div>
+          </td>
+          <td>
+            <span class="health-badge
+              {% if t.health == 'Healthy' %}badge-healthy
+              {% elif t.health == 'Warning' %}badge-warning
+              {% elif t.health == 'Critical' %}badge-critical
+              {% else %}badge-none
+              {% endif %}">
+              {% if t.health == 'Healthy' %}<i class="bi bi-check-circle me-1"></i>
+              {% elif t.health == 'Warning' %}<i class="bi bi-exclamation-triangle me-1"></i>
+              {% elif t.health == 'Critical' %}<i class="bi bi-x-octagon me-1"></i>
+              {% else %}<i class="bi bi-dash-circle me-1"></i>
+              {% endif %}
+              {{ t.health }}
+            </span>
+          </td>
+          <td class="mono">{{ t.test_count }}</td>
+          <td class="mono text-success">{{ t.passed }}</td>
+          <td class="mono {% if t.failed > 0 %}text-danger{% else %}text-muted{% endif %}">
+            {{ t.failed }}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="8" class="text-center text-muted py-5">
+            <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+            No tables found.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="row-count mt-3 text-muted" id="rowCount">
+  Showing {{ tables | length }} tables
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const rows = document.querySelectorAll('.table-row');
+  const btns = document.querySelectorAll('.filter-btn');
+  const rowCount = document.getElementById('rowCount');
+
+  function filterTable(filter) {
+    let visible = 0;
+    rows.forEach(row => {
+      const health = row.dataset.health;
+      const show = filter === 'all' || health === filter;
+      row.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+    rowCount.textContent = `Showing ${visible} table${visible !== 1 ? 's' : ''}`;
+  }
+
+  btns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      btns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filterTable(btn.dataset.filter);
+    });
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Test Results</h1>
+    <p class="page-sub">{{ test_cases | length }} test cases across all monitored tables</p>
+  </div>
+
+  <div class="filter-group" id="filterGroup">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="Success">
+      <span class="dot-healthy"></span> Passed
+    </button>
+    <button class="filter-btn" data-filter="Failed">
+      <span class="dot-critical"></span> Failed
+    </button>
+  </div>
+</div>
+
+<!-- Summary mini-cards -->
+<div class="test-summary-row">
+  {% set total = test_cases | length %}
+  {% set passed = test_cases | selectattr('status', 'eq', 'Success') | list | length %}
+  {% set failed = test_cases | selectattr('status', 'eq', 'Failed') | list | length %}
+
+  <div class="test-mini-card">
+    <div class="tmc-num">{{ total }}</div>
+    <div class="tmc-label">Total Tests</div>
+  </div>
+  <div class="test-mini-card success">
+    <div class="tmc-num text-success">{{ passed }}</div>
+    <div class="tmc-label">Passed</div>
+  </div>
+  <div class="test-mini-card danger">
+    <div class="tmc-num text-danger">{{ failed }}</div>
+    <div class="tmc-label">Failed</div>
+  </div>
+  <div class="test-mini-card">
+    <div class="tmc-num">
+      {% if total > 0 %}{{ ((passed / total) * 100) | int }}%{% else %}—{% endif %}
+    </div>
+    <div class="tmc-label">Pass Rate</div>
+  </div>
+</div>
+
+<!-- Test Results Table -->
+<div class="dash-card mt-3">
+  <div class="dash-card-body p-0">
+    <table class="health-table" id="testTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Test Name</th>
+          <th>Table</th>
+          <th>Status</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for tc in test_cases %}
+        <tr class="test-row" data-status="{{ tc.status }}">
+          <td class="mono text-muted">{{ loop.index }}</td>
+          <td>
+            <span class="test-name-chip">
+              <i class="bi bi-check2-square me-1"></i>{{ tc.test_name }}
+            </span>
+          </td>
+          <td>
+            <span class="db-chip">{{ tc.table }}</span>
+          </td>
+          <td>
+            {% if tc.status == 'Success' %}
+              <span class="health-badge badge-healthy">
+                <i class="bi bi-check-circle me-1"></i>Passed
+              </span>
+            {% elif tc.status == 'Failed' %}
+              <span class="health-badge badge-critical">
+                <i class="bi bi-x-circle me-1"></i>Failed
+              </span>
+            {% else %}
+              <span class="health-badge badge-none">
+                <i class="bi bi-question-circle me-1"></i>{{ tc.status }}
+              </span>
+            {% endif %}
+          </td>
+          <td class="text-muted small">{{ tc.description }}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="5" class="text-center text-muted py-5">
+            <i class="bi bi-inbox fs-3 d-block mb-2"></i>No test cases found.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="row-count mt-3 text-muted" id="rowCount">
+  Showing {{ test_cases | length }} test cases
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const rows = document.querySelectorAll('.test-row');
+  const btns = document.querySelectorAll('.filter-btn');
+  const rowCount = document.getElementById('rowCount');
+
+  function filterTests(filter) {
+    let visible = 0;
+    rows.forEach(row => {
+      const show = filter === 'all' || row.dataset.status === filter;
+      row.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+    rowCount.textContent = `Showing ${visible} test case${visible !== 1 ? 's' : ''}`;
+  }
+
+  btns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      btns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filterTests(btn.dataset.filter);
+    });
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Data Quality Overview</h1>
+    <p class="page-sub">
+      <i class="bi bi-clock me-1"></i>Last refreshed: {{ stats.last_refreshed }}
+      &nbsp;·&nbsp; Auto-refresh every 60s
+    </p>
+  </div>
+  <div class="header-badge">
+    <i class="bi bi-eye me-1"></i> Real-Time Monitoring
+  </div>
+</div>
+
+<!-- ═══ Summary Cards ═══ -->
+<div class="cards-grid">
+
+  <div class="stat-card primary">
+    <div class="stat-icon"><i class="bi bi-database"></i></div>
+    <div class="stat-body">
+      <div class="stat-number">{{ stats.total }}</div>
+      <div class="stat-label">Total Tables</div>
+    </div>
+  </div>
+
+  <div class="stat-card success">
+    <div class="stat-icon"><i class="bi bi-check-circle"></i></div>
+    <div class="stat-body">
+      <div class="stat-number">{{ stats.healthy }}</div>
+      <div class="stat-label">Healthy</div>
+    </div>
+    <div class="stat-pct">{{ stats.health_pct }}%</div>
+  </div>
+
+  <div class="stat-card warning">
+    <div class="stat-icon"><i class="bi bi-exclamation-triangle"></i></div>
+    <div class="stat-body">
+      <div class="stat-number">{{ stats.warning }}</div>
+      <div class="stat-label">Warning</div>
+    </div>
+  </div>
+
+  <div class="stat-card danger">
+    <div class="stat-icon"><i class="bi bi-x-octagon"></i></div>
+    <div class="stat-body">
+      <div class="stat-number">{{ stats.critical }}</div>
+      <div class="stat-label">Critical</div>
+    </div>
+  </div>
+
+  <div class="stat-card info">
+    <div class="stat-icon"><i class="bi bi-clipboard2-pulse"></i></div>
+    <div class="stat-body">
+      <div class="stat-number">{{ stats.total_tests }}</div>
+      <div class="stat-label">Tests Run</div>
+    </div>
+  </div>
+
+  <div class="stat-card pass-rate">
+    <div class="stat-icon"><i class="bi bi-graph-up-arrow"></i></div>
+    <div class="stat-body">
+      <div class="stat-number">
+        {% if stats.total_tests > 0 %}
+          {{ ((stats.total_passed / stats.total_tests) * 100) | int }}%
+        {% else %}
+          —
+        {% endif %}
+      </div>
+      <div class="stat-label">Pass Rate</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ Row: Trend Chart + Alert Panel ═══ -->
+<div class="row g-4 mt-1">
+
+  <!-- Trend Chart -->
+  <div class="col-lg-7">
+    <div class="dash-card">
+      <div class="dash-card-header">
+        <div class="dash-card-title">
+          <i class="bi bi-graph-up me-2"></i>Quality Score — Last 7 Days
+        </div>
+      </div>
+      <div class="dash-card-body">
+        <canvas id="trendChart" height="220"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Distribution donut -->
+  <div class="col-lg-5">
+    <div class="dash-card">
+      <div class="dash-card-header">
+        <div class="dash-card-title">
+          <i class="bi bi-pie-chart me-2"></i>Health Distribution
+        </div>
+      </div>
+      <div class="dash-card-body d-flex align-items-center justify-content-center">
+        <canvas id="donutChart" height="200" width="200"></canvas>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ Alert Panel ═══ -->
+{% if stats.critical_tables %}
+<div class="alert-panel critical mt-4">
+  <div class="alert-panel-header">
+    <i class="bi bi-exclamation-octagon-fill me-2"></i>
+    Critical Tables Require Immediate Attention ({{ stats.critical_tables | length }})
+  </div>
+  <div class="alert-panel-body">
+    {% for t in stats.critical_tables %}
+    <div class="alert-row">
+      <div class="alert-table-name">
+        <i class="bi bi-table me-2 text-danger"></i>{{ t.name }}
+        <span class="alert-db">{{ t.database }}</span>
+      </div>
+      <div class="alert-meta">
+        <span class="fail-count"><i class="bi bi-x-circle me-1"></i>{{ t.failed }} failed</span>
+        <span class="score-chip danger">{{ t.score }}%</span>
+        <a href="/tables" class="btn-inspect">Inspect <i class="bi bi-arrow-right"></i></a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% if stats.warning_tables %}
+<div class="alert-panel warning mt-3">
+  <div class="alert-panel-header">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    Tables with Warnings ({{ stats.warning_tables | length }})
+  </div>
+  <div class="alert-panel-body">
+    {% for t in stats.warning_tables %}
+    <div class="alert-row">
+      <div class="alert-table-name">
+        <i class="bi bi-table me-2 text-warning"></i>{{ t.name }}
+        <span class="alert-db">{{ t.database }}</span>
+      </div>
+      <div class="alert-meta">
+        <span class="fail-count warning-text"><i class="bi bi-dash-circle me-1"></i>{{ t.failed }} failed</span>
+        <span class="score-chip warning">{{ t.score }}%</span>
+        <a href="/tables" class="btn-inspect">Inspect <i class="bi bi-arrow-right"></i></a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // ── Trend Line Chart ──
+  fetch('/api/trend')
+    .then(r => r.json())
+    .then(data => {
+      const labels = data.map(d => d.date);
+      const scores = data.map(d => d.score);
+
+      const ctx = document.getElementById('trendChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Quality Score',
+            data: scores,
+            borderColor: '#4F8EF7',
+            backgroundColor: 'rgba(79,142,247,0.12)',
+            borderWidth: 2.5,
+            tension: 0.4,
+            fill: true,
+            pointBackgroundColor: '#4F8EF7',
+            pointRadius: 5,
+            pointHoverRadius: 7,
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: ctx => ` Quality: ${ctx.raw}%`
+              }
+            }
+          },
+          scales: {
+            y: {
+              min: 0, max: 100,
+              ticks: { callback: v => v + '%', color: '#8b9ab0' },
+              grid: { color: 'rgba(255,255,255,0.05)' }
+            },
+            x: {
+              ticks: { color: '#8b9ab0' },
+              grid: { color: 'rgba(255,255,255,0.05)' }
+            }
+          }
+        }
+      });
+    });
+
+  // ── Donut Chart ──
+  const donutCtx = document.getElementById('donutChart').getContext('2d');
+  new Chart(donutCtx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Healthy', 'Warning', 'Critical', 'No Tests'],
+      datasets: [{
+        data: [{{ stats.healthy }}, {{ stats.warning }}, {{ stats.critical }}, {{ stats.no_tests }}],
+        backgroundColor: ['#22c55e', '#f59e0b', '#ef4444', '#6b7280'],
+        borderWidth: 0,
+        hoverOffset: 4,
+      }]
+    },
+    options: {
+      cutout: '68%',
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { color: '#cbd5e1', padding: 14, font: { size: 12 } }
+        }
+      }
+    }
+  });
+</script>
+{% endblock %}
