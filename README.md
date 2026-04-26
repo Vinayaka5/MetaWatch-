@@ -93,14 +93,14 @@ docker compose up --detach
 ## Screenshots
 
 ### Overview Dashboard
-![Overview Dashboard](https://drive.google.com/drive/u/0/folders/1xr-Nz5MmZ7RIhRqy_dtxCNB028zWvD-E)
-![Overview Dashboard](https://drive.google.com/drive/u/0/folders/1xr-Nz5MmZ7RIhRqy_dtxCNB028zWvD-E)
+![Overview Dashboard](https://drive.google.com/file/d/1BmJ0j9z4FI6DybKgl8aBWRDw82IolcS4/view?usp=drive_link)
+![Overview Dashboard](https://drive.google.com/file/d/1lV4TRgYfHMJVGd29ogeLSSAIdwMlqmqT/view?usp=sharing)
 
 ### Table Health Page
-![Table Health](https://drive.google.com/drive/u/0/folders/1xr-Nz5MmZ7RIhRqy_dtxCNB028zWvD-E)
+![Table Health](https://drive.google.com/file/d/1HY2N9RqUGjG25ZADND28FtEa5w9gGUwj/view?usp=sharing)
 
 ### Test Results Page
-![Test Results](https://drive.google.com/drive/u/0/folders/1xr-Nz5MmZ7RIhRqy_dtxCNB028zWvD-E)
+![Test Results](https://drive.google.com/file/d/1LNTkou2yYhdTxsqczoYb47yeKrHAlOA1/view?usp=sharing)
 
 ---
 
